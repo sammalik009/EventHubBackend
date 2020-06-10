@@ -671,3 +671,28 @@ def searchCount(str1, str2):
                 else:
                     arr1[i][j].append(max(arr1[i - 1][j], arr1[i][j - 1]))
     return arr1[str1.__len__()][str2.__len__()]
+
+
+def search(request):
+    str1 = request.POST['search']
+    user = User.objects.get(pk=int(request.POST['user']))
+    users = User.objects.all()
+    events = Event.objects.all()
+    l1 = []
+    l2 = []
+    for u in users:
+        if u.pk != user.pk:
+            l1.append({'count':searchCount(u.username, str1), 'user':u})
+    for e in events:
+        l2.append({'count': searchCount(e.title, str1), 'event': e})
+    l1.sort(key=lambda x: x['count'], reverse=True)
+    l2.sort(key=lambda x: x['count'], reverse=True)
+    l3 = []
+    l4 = []
+    for i in l1:
+        l3.append(i['user'])
+    for i in l2:
+        l4.append(i['event'])
+    return Response({'users': list(l3), 'events': list(l4)})
+
+
