@@ -25,6 +25,10 @@ class EventViewSet(viewsets.ModelViewSet):
         return event_services.get_events_category(request.data['category'])
 
     @action(detail=False, methods=['post'])
+    def search(self, request):
+        return event_services.search(request)
+
+    @action(detail=False, methods=['post'])
     def get_event(self, request):
         return event_services.get_event(request)
 

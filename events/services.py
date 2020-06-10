@@ -9,7 +9,7 @@ from rest_framework.response import Response
 from payment.models import Payment
 from attendee.api.serializers import AttendeeSerializer
 from notification import services
-from users.api.serializers import RequestSerializer
+from users.api.serializers import RequestSerializer,UsersSerializer
 
 
 def change_status2(e, status):
@@ -657,34 +657,39 @@ def get_admin_events_approved(request):
     return Response({'events': serializer.data, 'sold': list(sold), 'sales': list(sales)})
 
 
+def max1(a, b):
+    if a > b:
+        return a
+    return b
+
+
 def searchCount(str1, str2):
     arr1 = []
     for i in range(str1.__len__() + 1):
         arr1.append([])
         for j in range(str2.__len__() + 1):
-            arr1[i].append([])
             if i == 0 or j == 0:
-                arr1[i][j].append(0)
+                arr1[i].append(0)
             else:
                 if str1[i-1] == str2[j-1]:
-                    arr1[i][j].append(arr1[i - 1][j - 1] + 1)
+                    arr1[i].append(arr1[i - 1][j - 1] + 1)
                 else:
-                    arr1[i][j].append(max(arr1[i - 1][j], arr1[i][j - 1]))
+                    arr1[i].append(max1(arr1[i - 1][j], arr1[i][j - 1]))
     return arr1[str1.__len__()][str2.__len__()]
 
 
 def search(request):
-    str1 = request.POST['search']
-    user = User.objects.get(pk=int(request.POST['user']))
+    str1 = request.data['search']
+    user = User.objects.get(pk=int(request.data['user']))
     users = User.objects.all()
-    events = Event.objects.all()
+    events = Event.objects.filter(Q(status="APPROVED") | Q(status="HAPPENING TODAY") | Q(status="HAPPENED"))
     l1 = []
     l2 = []
     for u in users:
         if u.pk != user.pk:
-            l1.append({'count':searchCount(u.username, str1), 'user':u})
+            l1.append({'count': searchCount(u.username.lower(), str1.lower()), 'user': u})
     for e in events:
-        l2.append({'count': searchCount(e.title, str1), 'event': e})
+        l2.append({'count': searchCount(e.title.lower(), str1.lower()), 'event': e})
     l1.sort(key=lambda x: x['count'], reverse=True)
     l2.sort(key=lambda x: x['count'], reverse=True)
     l3 = []
@@ -693,6 +698,8 @@ def search(request):
         l3.append(i['user'])
     for i in l2:
         l4.append(i['event'])
-    return Response({'users': list(l3), 'events': list(l4)})
+    serializer1 = EventsSerializer(l4, many=True)
+    serializer2 = UsersSerializer(l3, many=True)
+    return Response({'users': serializer2.data, 'events': serializer1.data})
 
 
