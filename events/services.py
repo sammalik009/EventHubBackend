@@ -670,5 +670,4 @@ def searchCount(str1, str2):
                     arr1[i][j].append(arr1[i - 1][j - 1] + 1)
                 else:
                     arr1[i][j].append(max(arr1[i - 1][j], arr1[i][j - 1]))
-    a = 10
     return arr1[str1.__len__()][str2.__len__()]
