@@ -655,3 +655,18 @@ def get_admin_events_approved(request):
             sales.append(float(event.sold_tickets) * float(event.price_ticket))
     serializer = EventsSerializer(events, many=True)
     return Response({'events': serializer.data, 'sold': list(sold), 'sales': list(sales)})
+
+
+def searchCount(str1, str2):
+    arr1 = []
+    for i in range(str1.__len__() + 1):
+        arr1.append([])
+        for j in range(str2.__len__() + 1):
+            if i == 0 or j == 0:
+                arr1[i][j] = 0
+            else:
+                if str1[i-1] == str2[j-1]:
+                    arr1[i][j] = arr1[i - 1][j - 1] + 1
+                else:
+                    arr1[i][j] = max(arr1[i - 1][j], arr1[i][j - 1])
+    return arr1[str1.__len__()][str2.__len__()]
